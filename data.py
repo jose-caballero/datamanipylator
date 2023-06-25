@@ -191,16 +191,13 @@ def display(nested_dict, indent=0):
     """
     output = ""
     for key, value in nested_dict.items():
-        output += '\n'
         output += " " * indent + str(key) + "\n"
         if isinstance(value, dict):
             output += display(value, indent + 4)
         elif isinstance(value, list):
-            output += '\n'
             for item in value:
                 output += " " * (indent + 4) + '%s' %str(item) + '\n'
         else:
-            output += '\n'
             output += " " * (indent + 4) + str(value) + "\n"
     return output
 
