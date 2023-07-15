@@ -429,22 +429,25 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         return new_info
 
     @catch_exception
-    def __indexby(self, analyzer):
         # 1
-        tmp_new_data = {} 
+        tmp_new_data = {}
         for item in self.data:
-            key = analyzer.indexby(item)
-            if key is not None:
-                if key not in tmp_new_data.keys():
-                    tmp_new_data[key] = []
-                tmp_new_data[key].append(item) 
+            key_l = analyzer.indexby(item)
+            if key_l is not None:
+                if not isinstance(key_l, tuple):
+                    # indexyby( ) may return a tuple or a single value
+                    # in the second case, let's convert it into an interable
+                    key_l = [key_l]
+                for key in key_l:
+                    if key not in tmp_new_data.keys():
+                        tmp_new_data[key] = []
+                    tmp_new_data[key].append(item)
         # 2
         new_data = {}
         for k, v in tmp_new_data.items():
             new_data[k] = Data(v, timestamp=self.timestamp)
 
         return new_data
-
 
     # -------------------------------------------------------------------------
 
