@@ -577,6 +577,13 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         new_data = analyzer.process(self.data)
         return new_data
 
+    def count(self):
+        new_data = self.__count()
+        new_info = _NonMutableData(new_data, timestamp=self.timestamp)
+        return new_info
+    
+    def __count(self):
+        return len(self.data)
 
 # =============================================================================
 
@@ -642,6 +649,14 @@ class _DictData(_BaseDict, _AnalysisInterface):
         for key, data in self.data.items(): 
             self.log.debug('calling process() for content in key %s'%key)
             new_data[key] = data.process(analyzer)
+        new_info = _NonMutableDictData(new_data, timestamp=self.timestamp)
+        return new_info
+
+    def count(self):
+        new_data = {}
+        for key, data in self.data.items():
+            self.log.debug('calling process() for content in key %s'%key)
+            new_data[key] = data.count()
         new_info = _NonMutableDictData(new_data, timestamp=self.timestamp)
         return new_info
 
