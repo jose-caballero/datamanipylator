@@ -434,9 +434,9 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         for item in self.data:
             key_l = analyzer.indexby(item)
             if key_l is not None:
-                if not isinstance(key_l, tuple):
-                    # indexyby( ) may return a tuple or a single value
-                    # in the second case, let's convert it into an interable
+                if not type(key_l0 in  [tuple, list]:
+                    # indexyby( ) may return a tuple, a list, or a single value
+                    # in the last case, let's convert it into an interable
                     key_l = [key_l]
                 for key in key_l:
                     if key not in tmp_new_data.keys():
