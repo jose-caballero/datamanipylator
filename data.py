@@ -428,6 +428,8 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         new_info = _DictData(new_data, timestamp=self.timestamp)
         return new_info
 
+    @catch_exception
+    def __indexby(self, analyzer):
         # 1
         tmp_new_data = {}
         for item in self.data:
