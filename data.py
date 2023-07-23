@@ -428,13 +428,12 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         new_info = _DictData(new_data, timestamp=self.timestamp)
         return new_info
 
-    @catch_exception
         # 1
         tmp_new_data = {}
         for item in self.data:
             key_l = analyzer.indexby(item)
             if key_l is not None:
-                if not type(key_l0 in  [tuple, list]:
+                if not type(key_l) in  [tuple, list]:
                     # indexyby( ) may return a tuple, a list, or a single value
                     # in the last case, let's convert it into an interable
                     key_l = [key_l]
