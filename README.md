@@ -148,3 +148,58 @@ Implementation of a process() method:
 
 
 A few basic pre-made Analyzers have been implemented, ready to use. 
+
+# Fake example
+
+Here is a fake example:
+
+    class C(object):
+        def __init__(self, name1, name2, value):
+            self.name1 = name1
+            self.name2 = name2
+            self.value = value
+
+    l = []
+    l.append( C("foo", "test1", 4) )
+    l.append( C("foo", "test2", 8) )
+    l.append( C("bar", "test2", 8) )
+    l.append( C("bar", "test2", 3) )
+    l.append( C("bar", "test3", 1) )
+    l.append( C("foo", "test3", 2) )
+    l.append( C("foo", "test3", 2) )
+    l.append( C("foo", "test1", 9) )
+    l.append( C("bar", "test1", 9) )
+
+    class TooLarge(AnalyzerFilter):
+        def __init__(self, x):
+            self.x = x
+        def filter(self, c):
+            return c.value <= self.x
+
+    class ClassifyName1(AnalyzerIndexBy):
+        def indexby(self, c):
+            return c.name1
+
+    class ClassifyName2(AnalyzerIndexBy):
+        def indexby(self, c):
+            if c.name2 == "test1":
+                return "first"
+            elif c.name2 == "test2":
+                return "second"
+            else:
+                return "third"
+
+    class Total(AnalyzerReduce):
+        def reduce(self, v1, v2):
+            if isinstance(v1, int):
+                return v1 + v2.value
+            else:
+                return v1.value + v2.value
+
+    data = Data(l)
+    data = data.filter(TooLarge(5))
+    data = data.indexby(ClassifyName1())
+    data = data.indexby(ClassifyName2())
+    data = data.reduce(Total(0))
+    out = data.getraw()
+    print(display(out))
