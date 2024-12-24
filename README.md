@@ -131,6 +131,10 @@ Implementation of a transform() method:
 - the input is the entire list of data objects
 - the output is a new list of data object
 
+Implementation of a sort() method:
+- the input are 2 Data objects
+- the output is -1, 0 or 1, based on the implemented sorting rules
+
 Implementation of a process() method:
 - the input is the entire list of data objects
 - the output can be anything
@@ -144,6 +148,7 @@ Implementation of a process() method:
 | `filter()`             | `AnalyzerFilter`      | `filter()`            | a data object        | True/False                    |
 | `reduce()`             | `AnalyzerReduce`      | `reduce()`            | two data objects     | new aggregated value          |
 | `transform()`          | `AnalyzerTransform`   | `transform()`         | all data objects     | new list of data objects      |
+| `sort()`               | `AnalyzerSort`        | `sort()`              | all data objects     | the list sorted               |
 | `process()`            | `AnalyzerProcess`     | `process()`           | all data objects     | anything                      |
 
 
