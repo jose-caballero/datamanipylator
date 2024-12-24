@@ -3,170 +3,6 @@
 __author__ = "Jose Caballero"
 __email__ = "jcaballero.hep@gmail.com"
 
-"""
-Code to store and manipulate data.
-
--------------------------------------------------------------------------------
-                            class Data
--------------------------------------------------------------------------------
-
-This is the only class implemented that is meant to be public.
-
-The data stored by instances of class Data must be a list of items. 
-These items can be anything, including objects. 
-A typical example is data is a list of HTCondor ClassAds, where each 
-item in the data list represents an HTCondor job.
-
-Class Data has several methods to manipulate the data, 
-but in all cases the output of the method is a new instance of one of the 
-classes implemented: Data, _DictData, etc.
-Methods never modify the current instance data.
-This allows to perform different manipulations from the same source object.
-
-There are two types of methods in class Data:
-
-    - methods whose object output accepts further processing.
-      Examples are methods indexby(), filter(), and map().
-
-    - methods whose object output can not be processed anymore.
-      An attempt to call any method on these instances
-      will raise an Exception.
-      Examples are methods reduce(), and process().
-
-The method indexby() is somehow special. 
-It is being used to split the stored data into a dictionary, 
-according to whatever rule is provided. 
-The values of this dictionary are themselves new Data instances. 
-Therefore, the output of calling indexby() once is an _DictData object 
-with data:
-        
-    self.data = {
-                 key1: <Data>,
-                 key2: <Data>,
-                 ...
-                 keyN: <Data>
-                }
-
--------------------------------------------------------------------------------
-                            Implementation
--------------------------------------------------------------------------------
-
-The UML source for the classes is as follows:
-
-        @startuml
-        
-        object <|-- _Base
-        
-        _Base <|-- _BaseDict 
-        _Base <|-- Data 
-        _Base <|-- _NonMutableData 
-
-        _AnalysisInterface <|-- Data  
-        _AnalysisInterface <|-- _DictData 
-
-        _BaseDict <|-- _DictData 
-        _BaseDict <|-- _NonMutableDictData 
-
-        _GetRawBase <|-- Data 
-        _GetRawBase <|-- _NonMutableData 
-        
-        @enduml
-
-
-                                                            +--------+      
-                                                            | object |
-                                                            +--------+
-                                                                ^
-                                                                |
- +--------------------+                                     +-------+
- | _AnalysisInterface |    +------------------------------->| _Base |<-----------------+                  
- +--------------------+    |                                +-------+                  |
-   ^                ^      |        +-------------+             ^               +-----------+              
-   |                |      |        | _GetRawBase |             |               | _BaseDict |       
-   |                |      |        +-------------+             |               +-----------+      
-   |                |      |          ^        ^                |                 ^      ^     
-   |                |      |          |        |                |                 |      |   
-   |                |      |          |        |                |                 |      |   
-   |                |      |          |        |                |                 |      |   
-   |                |      |          |        |                |                 |      |   
-   |            +==============+      |        |   +-----------------------+      |      |
-   |            || Data       ||------+        +---| _NonMutableData       |      |      |
-   |            +==============+                   +-----------------------+      |      |
-   |                                    +-----------------+                       |  +---------------------------+
-   +------------------------------------| _DictData       |-----------------------+  | _NonMutableDictData       |
-                                        +-----------------+                          +---------------------------+
-
-
-where Data is the only class truly part of the public API.
-
-
--------------------------------------------------------------------------------
-                            Analyzers 
--------------------------------------------------------------------------------
-
-
-The input to all methods is an object of type Analyzer. 
-Analyzers are classes that implement the rules or policies to be used 
-for each method call.  
-For example: 
-    - a call to method indexby() expects an object of type AnalyzerIndexBy
-    - a call to method map() expects an object of type AnalyzerMap
-    - a call to method reduce() expects an object of type AnalyzerReduce
-    - etc.
-
-Each Analyzer object must have implemented a method 
-with the same name that the Data's method it is intended for. 
-For exmple:
-
-    - classes AnalyzerIndexBy must implement method indexby()
-    - classes AnalyzerMap must implement method map()
-    - classes AnalyzerReduce must implement method reduce()
-    - ...
-
-
-Passing an analyzer object that does not implement the right method will 
-raise an IncorrectAnalyzer Exception.
-
-Implementation of an indexby() method:
-    - the input is an individual item from the list of data objects being analyzed
-    - the output is the key under which this item will belong in the aggregated object
-
-Implementation of a map() method:
-    - the input is an individual item from the list of data objects being analyzed
-    - the output is the modified item 
-
-Implementation of a filter() method:
-    - the input is an individual item from the list of data objects being analyzed
-    - the output is a boolean indicating if the item should be kept or not
-
-Implementation of a reduce() method:
-    - the input is an individual item from the list of data objects being analyzed
-    - the output is the aggregated result of analyzing the item and the previous value,
-      which is being stored in a class attribute
-
-Implementation of a transform() method:
-    - the input is the entire list of data objects
-    - the output is a new list of data object
-
-Implementation of a process() method:
-    - the input is the entire list of data objects
-    - the output can be anything
-
-
-    --------------------+----------------------------------------------------------------------------------------
-    Container's method  | Analyzer Type       Analyzer's method   method's inputs    method's output
-    --------------------+----------------------------------------------------------------------------------------
-    indexby()           | AnalyzerIndexBy     indexby()           a data object      the key for the dictionary
-    map()               | AnalyzerMap         map()               a data object      new data object
-    filter()            | AnalyzerFilter      filter()            a data object      True/False
-    reduce()            | AnalyzerReduce      reduce()            two data objects   new aggregated value
-    transform()         | AnalyzerTransform   transform()         all data objects   new list of data object
-    process()           | AnalyzerProcess     process()           all data objects   anything
-    --------------------+----------------------------------------------------------------------------------------
-
-
-A few basic pre-made Analyzers have been implemented, ready to use. 
-"""
 
 import datetime
 import inspect
@@ -181,76 +17,26 @@ import sys
 
 from  functools import reduce
 
-# =============================================================================
-# ancillaries
-# =============================================================================
-
-def display(nested_dict, indent=0):
-    """
-    display the results of the processing
-    """
-    output = ""
-    for key, value in nested_dict.items():
-        output += " " * indent + str(key) + "\n"
-        if isinstance(value, dict):
-            output += display(value, indent + 4)
-        elif isinstance(value, list):
-            for item in value:
-                output += " " * (indent + 4) + '%s' %str(item) + '\n'
-        else:
-            output += " " * (indent + 4) + str(value) + "\n"
-    return output
-
-
-# =============================================================================
-#  Decorators 
-#
-#   Note:
-#   the decorator must be implemented before the classes using it 
-#   otherwise, they do not find it
-# =============================================================================
-
-def validate_call(method):
-    """
-    validates calls to the processing methods.
-    Checks: 
-        * if the Data object is mutable or not, 
-        * if a method is being called with the right type of Analyzer
-    Exceptions are raised with some criteria is not met.
-    """
-    def wrapper(self, analyzer, *k, **kw):
-        method_name = method.__name__
-        analyzertype = analyzer.analyzertype
-        if not analyzertype == method_name:
-            msg = 'Analyzer object {obj} is not type {name}. Raising exception.'
-            msg = msg.format(obj = analyzer,
-                             name = method_name)
-            self.log.error(msg)
-            raise IncorrectAnalyzer(analyzer, analyzertype, method_name)
-        out = method(self, analyzer, *k, **kw)
-        return out
-    return wrapper
-
-
-def catch_exception(method):
-    """
-    catches any exception during data processing
-    and raises an AnalyzerFailure exception
-    """
-    def wrapper(self, analyzer):
-        try:
-            out = method(self, analyzer)
-        except Exception as ex:
-            msg = 'Exception of type "%s" ' %ex.__class__.__name__
-            msg += 'with content "%s" ' %ex
-            msg += 'while calling "%s" ' %method.__name__
-            msg += 'with analyzer "%s"' %analyzer
-            raise AnalyzerFailure(msg)
-        else:
-            return out
-    return wrapper
-
-
+from manipylator.exceptions import (
+    IncorrectInputDataType,
+    NotAnAnalyzer,
+    IncorrectAnalyzer,
+    MissingKeyException,
+    AnalyzerFailure,
+)
+from manipylator.decorators import (
+    validate_call,
+    catch_exception,
+)
+from manipylator.analyzers import (
+    AnalyzerIndexBy,
+    AnalyzerFilter,
+    AnalyzerMap,
+    AnalyzerReduce,
+    AnalyzerTransform,
+    AnalyzerSort,
+    AnalyzerProcess,
+)
 
 # =============================================================================
 # Base classes and interfaces
@@ -351,6 +137,9 @@ class _AnalysisInterface:
         raise NotImplementedError
 
     def transform(self, analyzer):
+        raise NotImplementedError
+
+    def sort(self, analyzer):
         raise NotImplementedError
 
     def process(self, analyzer):
@@ -552,11 +341,31 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         new_info = Data(new_data, timestamp=self.timestamp)
         return new_info
 
-
     @catch_exception
     def __transform(self, analyzer):
         new_data = analyzer.transform(self.data)
         return new_data
+
+    # -------------------------------------------------------------------------
+
+    @validate_call
+    def sort(self, lambdasort):
+        """
+        sorts the entire self.data at the raw level
+        :param analyzer: an instance of AnalyzerSort-type class 
+                         implementing method sort()
+        :rtype Data: 
+        """
+        self.log.debug('Starting with sort lambda %s' %lambdasort)
+        new_data = self.__sort(lambdasort)
+        new_info = Data(new_data, timestamp=self.timestamp)
+        return new_info
+
+    @catch_exception
+    def __sort(self, lambdasort):
+        from functools import cmp_to_key
+        sorted_data = sorted(self.data, key=cmp_to_key(lambdasort.sort))
+        return sorted_data
 
     # -------------------------------------------------------------------------
 
@@ -645,6 +454,16 @@ class _DictData(_BaseDict, _AnalysisInterface):
 
 
     @validate_call
+    def sort(self, analyzer):
+        new_data = {}
+        for key, data in self.data.items(): 
+            self.log.debug('calling sort() for content in key %s'%key)
+            new_data[key] = data.sort(analyzer)
+        new_info = _DictData(new_data, timestamp=self.timestamp)
+        return new_info
+
+
+    @validate_call
     def process(self, analyzer):
         new_data = {}
         for key, data in self.data.items(): 
@@ -669,204 +488,3 @@ class _NonMutableDictData(_BaseDict):
     pass
 
 
-# =============================================================================
-# Analyzers
-# =============================================================================
-
-class Analyzer(object):
-    pass
-
-
-class AnalyzerIndexBy(Analyzer):
-    analyzertype = "indexby"
-    def indexby(self):
-        """
-        Implementation of an indexby() method:
-            - the input is an individual item from the list of data objects being analyzed
-            - the output is the key under which this item will belong in the aggregated object
-        """
-        raise NotImplementedError
-
-
-class AnalyzerFilter(Analyzer):
-    analyzertype = "filter"
-    def filter(self):
-        """
-        Implementation of a filter() method:
-            - the input is an individual item from the list of data objects being analyzed
-            - the output is a boolean indicating if the item should be kept or not
-        """
-        raise NotImplementedError
-
-
-class AnalyzerMap(Analyzer):
-    analyzertype = "map"
-    def map(self):
-        """
-        Implementation of a map() method:
-            - the input is an individual item from the list of data objects being analyzed
-            - the output is the modified item 
-        """
-        raise NotImplementedError
-
-
-class AnalyzerReduce(Analyzer):
-    analyzertype = "reduce"
-    def __init__(self, init_value=None):
-        self.init_value = init_value
-
-    def initialvalue(self):
-        return self.init_value
-
-    def reduce(self):
-        """
-        Implementation of a reduce() method:
-            - the input is an individual item from the list of data objects being analyzed
-            - the output is the aggregated result of analyzing the item and the previous value,
-              which is being stored in a class attribute
-        """
-        raise NotImplementedError
-
-
-class AnalyzerTransform(Analyzer):
-    analyzertype = "transform"
-    def transform(self):
-        """
-        Implementation of a transform() method:
-            - the input is the entire list of data objects
-            - the output is a new list of data object
-        """
-        raise NotImplementedError
-
-
-class AnalyzerProcess(Analyzer):
-    analyzertype = "process"
-    def process(self):
-        """
-        Implementation of a process() method:
-            - the input is the entire list of data objects
-            - the output can be anything
-        """
-        raise NotImplementedError
-
-
-class Algorithm(object):
-    """
-    container for multiple Analyzer objects
-    """
-    def __init__(self):
-        self.analyzer_l= []
-
-    def add(self, analyzer):
-        self.analyzer_l.append(analyzer)
-
-    def analyze(self, input_data):
-        tmp_out = input_data
-        for analyzer in self.analyzer_l:
-            tmp_out = tmp_out.analyze(analyzer)
-        return tmp_out
-
-
-# =============================================================================
-# Exceptions
-# =============================================================================
-
-class IncorrectInputDataType(Exception):
-    def __init__(self, type):
-        self.value = 'Type of input data is not %s' %type
-    def __str__(self):
-        return repr(self.value)
-
-
-class NotAnAnalyzer(Exception):
-    def __init__(self):
-        self.value = 'object does not have a valid analyzertype value'
-    def __str__(self):
-        return repr(self.value)
-
-
-class IncorrectAnalyzer(Exception):
-    def __init__(self, analyzer, analyzertype, methodname):
-        value = "Analyzer object {ana} is of type '{atype}' but used for '{call}()'" 
-        self.value = value.format(ana=analyzer, 
-                                  atype=analyzertype, 
-                                  call=methodname)
-    def __str__(self):
-        return repr(self.value)
-
-
-class MissingKeyException(Exception):
-    def __init__(self, key):
-        self.value = "Key %s is not in the data dictionary" %key
-    def __str__(self):
-        return repr(self.value)
-
-
-class AnalyzerFailure(Exception):
-    """
-    generic Exception for any unclassified failure
-    """
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
-
-if __name__ == '__main__':
-    # ============================================================================== 
-    # fake example
-    # ============================================================================== 
-    
-    class C(object):
-        def __init__(self, name1, name2, value):
-            self.name1 = name1
-            self.name2 = name2
-            self.value = value
-    
-    l = []
-    l.append( C("foo", "test1", 4) ) 
-    l.append( C("foo", "test2", 8) )
-    l.append( C("bar", "test2", 8) )
-    l.append( C("bar", "test2", 3) )
-    l.append( C("bar", "test3", 1) )
-    l.append( C("foo", "test3", 2) )
-    l.append( C("foo", "test3", 2) )
-    l.append( C("foo", "test1", 9) )
-    l.append( C("bar", "test1", 9) )
-    
-    class TooLarge(AnalyzerFilter):
-        def __init__(self, x):
-            self.x = x
-        def filter(self, c):
-            return c.value <= self.x
-    
-    class ClassifyName1(AnalyzerIndexBy):
-        def indexby(self, c):
-            return c.name1
-    
-    class ClassifyName2(AnalyzerIndexBy):
-        def indexby(self, c):
-            if c.name2 == "test1":
-                return "first"
-            elif c.name2 == "test2":
-                return "second"
-            else:
-                return "third"
-    
-    class Total(AnalyzerReduce):
-        def reduce(self, v1, v2):
-            if isinstance(v1, int):
-                return v1 + v2.value
-            else:
-                return v1.value + v2.value
-    
-    data = Data(l)
-    data = data.filter(TooLarge(5))
-    data = data.indexby(ClassifyName1())
-    data = data.indexby(ClassifyName2())
-    data = data.reduce(Total(0))
-    out = data.getraw()
-    print(display(out))
-    
-    
-    
