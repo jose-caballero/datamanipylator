@@ -34,6 +34,7 @@ from manipylator.analyzers import (
     AnalyzerMap,
     AnalyzerReduce,
     AnalyzerTransform,
+    AnalyzerSort,
     AnalyzerProcess,
 )
 
@@ -136,6 +137,9 @@ class _AnalysisInterface:
         raise NotImplementedError
 
     def transform(self, analyzer):
+        raise NotImplementedError
+
+    def sort(self, analyzer):
         raise NotImplementedError
 
     def process(self, analyzer):
@@ -337,11 +341,31 @@ class Data(_Base, _AnalysisInterface, _GetRawBase):
         new_info = Data(new_data, timestamp=self.timestamp)
         return new_info
 
-
     @catch_exception
     def __transform(self, analyzer):
         new_data = analyzer.transform(self.data)
         return new_data
+
+    # -------------------------------------------------------------------------
+
+    @validate_call
+    def sort(self, lambdasort):
+        """
+        sorts the entire self.data at the raw level
+        :param analyzer: an instance of AnalyzerSort-type class 
+                         implementing method sort()
+        :rtype Data: 
+        """
+        self.log.debug('Starting with sort lambda %s' %lambdasort)
+        new_data = self.__sort(lambdasort)
+        new_info = Data(new_data, timestamp=self.timestamp)
+        return new_info
+
+    @catch_exception
+    def __sort(self, lambdasort):
+        from functools import cmp_to_key
+        sorted_data = sorted(self.data, key=cmp_to_key(lambdasort.sort))
+        return sorted_data
 
     # -------------------------------------------------------------------------
 
@@ -425,6 +449,16 @@ class _DictData(_BaseDict, _AnalysisInterface):
         for key, data in self.data.items(): 
             self.log.debug('calling transform() for content in key %s'%key)
             new_data[key] = data.transform(analyzer)
+        new_info = _DictData(new_data, timestamp=self.timestamp)
+        return new_info
+
+
+    @validate_call
+    def sort(self, analyzer):
+        new_data = {}
+        for key, data in self.data.items(): 
+            self.log.debug('calling sort() for content in key %s'%key)
+            new_data[key] = data.sort(analyzer)
         new_info = _DictData(new_data, timestamp=self.timestamp)
         return new_info
 

@@ -64,6 +64,17 @@ class AnalyzerTransform(Analyzer):
         raise NotImplementedError
 
 
+class AnalyzerSort(Analyzer):
+    analyzertype = "sort"
+    def sort(self):
+        """
+        Implementation of a sort() method:
+            - the input are 2 Data objects to compare
+            - the output is -1, 0 or 1, based on the implemented sorting rules
+        """
+        raise NotImplementedError
+
+
 class AnalyzerProcess(Analyzer):
     analyzertype = "process"
     def process(self):
