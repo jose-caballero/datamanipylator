@@ -148,7 +148,7 @@ Implementation of a process() method:
 | `filter()`             | `AnalyzerFilter`      | `filter()`            | a data object        | True/False                    |
 | `reduce()`             | `AnalyzerReduce`      | `reduce()`            | two data objects     | new aggregated value          |
 | `transform()`          | `AnalyzerTransform`   | `transform()`         | all data objects     | new list of data objects      |
-| `sort()`               | `AnalyzerSort`        | `sort()`              | all data objects     | the list sorted               |
+| `sort()`               | `AnalyzerSort`        | `sort()`              | two data objects     | -1, 0, 1 (order)              |
 | `process()`            | `AnalyzerProcess`     | `process()`           | all data objects     | anything                      |
 
 
