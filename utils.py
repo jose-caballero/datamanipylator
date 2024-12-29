@@ -2,16 +2,12 @@ def display(nested_dict, indent=0):
     """
     display the results of the processing
     """
-    output = ""
-    for key, value in nested_dict.items():
-        output += " " * indent + str(key) + "\n"
-        if isinstance(value, dict):
-            output += display(value, indent + 4)
-        elif isinstance(value, list):
-            for item in value:
-                output += " " * (indent + 4) + '%s' %str(item) + '\n'
-        else:
-            output += " " * (indent + 4) + str(value) + "\n"
-    return output
-
-
+    if isinstance(nested_dict, dict):
+        for key, value in nested_dict.items():
+            print(" " * indent + str(key))
+            display(value, indent + 4)
+    elif isinstance(nested_dict, list):
+        for item in nested_dict:
+            print(" " * (indent) + '%s' %str(item))
+    else:
+        print(" " * (indent) + str(nested_dict))
