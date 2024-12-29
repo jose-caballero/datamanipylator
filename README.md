@@ -154,6 +154,13 @@ Implementation of a process() method:
 
 A few basic pre-made Analyzers have been implemented, ready to use. 
 
+# Other methods
+
+| **Method's name** | **Analyzer Equivalent** | **Method's inputs** | **Method's output** |
+|-------------------|-------------------------|---------------------|---------------------|
+| `count()`         | Process                 | list                | len() of the list   |
+
+
 # Fake example
 
 Here is a fake example:
