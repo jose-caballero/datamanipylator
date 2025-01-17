@@ -215,3 +215,9 @@ Here is a fake example:
     data = data.reduce(Total(0))
     out = data.getraw()
     print(display(out))
+
+# Installation
+
+    pip install datamanipylator
+
+
