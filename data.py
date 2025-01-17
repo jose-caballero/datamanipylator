@@ -17,18 +17,18 @@ import sys
 
 from  functools import reduce
 
-from manipylator.exceptions import (
+from datamanipylator.exceptions import (
     IncorrectInputDataType,
     NotAnAnalyzer,
     IncorrectAnalyzer,
     MissingKeyException,
     AnalyzerFailure,
 )
-from manipylator.decorators import (
+from datamanipylator.decorators import (
     validate_call,
     catch_exception,
 )
-from manipylator.analyzers import (
+from datamanipylator.analyzers import (
     AnalyzerIndexBy,
     AnalyzerFilter,
     AnalyzerMap,
